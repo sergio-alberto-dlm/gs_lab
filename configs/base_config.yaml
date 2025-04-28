@@ -1,0 +1,142 @@
+# Disable viewer
+disable_viewer: false
+
+# Path to the .pt file. If provided, it will skip training and render a video
+ckpt: null
+
+# Path to the Mip-NeRF 360 dataset
+data_dir: data/360_v2/garden
+# Downsample factor for the dataset
+data_factor: 4
+# Directory to save results
+result_dir: results/garden
+# Every N images there is a test image
+test_every: 8
+# Random crop size for training (experimental)
+patch_size: null
+# A global scaler that applies to the scene size related parameters
+global_scale: 1.0
+
+# Port for the viewer server
+port: 8080
+
+# Batch size for training. Learning rates are scaled automatically
+batch_size: 1
+# A global factor to scale the number of training steps
+steps_scaler: 1.0
+
+# Number of training steps
+max_steps: 30000
+# Steps to evaluate the model
+eval_steps: [7000, 30000]
+# Steps to save the model
+save_steps: [7000, 30000]
+
+# Initialization strategy
+init_type: sfm
+# Initial number of GSs. Ignored if using sfm
+init_num_pts: 100000
+# Initial extent of GSs as a multiple of the camera extent. Ignored if using sfm
+init_extent: 3.0
+# Degree of spherical harmonics
+sh_degree: 3
+# Turn on another SH degree every this steps
+sh_degree_interval: 1000
+# Initial opacity of GS
+init_opa: 0.1
+# Initial scale of GS
+init_scale: 1.0
+# Weight for SSIM loss
+ssim_lambda: 0.2
+
+# Near plane clipping distance
+near_plane: 0.2
+# Far plane clipping distance
+far_plane: 200
+
+# GSs with opacity below this value will be pruned
+prune_opa: 0.05
+# GSs with image plane gradient above this value will be split/duplicated
+grow_grad2d: 0.0002
+# GSs with scale below this value will be duplicated. Above will be split
+grow_scale3d: 0.01
+# GSs with scale above this value will be pruned
+prune_scale3d: 0.1
+
+# Start refining GSs after this iteration
+refine_start_iter: 500
+# Stop refining GSs after this iteration
+refine_stop_iter: 15000
+# Reset opacities every this steps
+reset_every: 3000
+# Refine GSs every this steps
+refine_every: 100
+
+# Use packed mode for rasterization
+packed: false
+# Use sparse gradients for optimization (experimental)
+sparse_grad: false
+# Use absolute gradient for pruning
+absgrad: false
+# Anti-aliasing in rasterization
+antialiased: false
+# Revised opacity heuristic (experimental)
+revised_opacity: false
+
+# Use random background for training
+random_bkgd: false
+
+# Enable camera optimization
+pose_opt: false
+# Learning rate for camera optimization
+pose_opt_lr: 1e-5
+# Regularization for camera optimization
+pose_opt_reg: 1e-6
+# Add noise to camera extrinsics
+pose_noise: 0.0
+
+# Enable appearance optimization (experimental)
+app_opt: false
+# Appearance embedding dimension
+app_embed_dim: 16
+# Learning rate for appearance optimization
+app_opt_lr: 0.001
+# Regularization for appearance optimization
+app_opt_reg: 1e-6
+
+# Enable depth loss (experimental)
+depth_loss: false
+# Weight for depth loss
+depth_lambda: 0.01
+
+# Enable normal consistency loss (2DGS only)
+normal_loss: false
+# Weight for normal loss
+normal_lambda: 0.05
+# Iteration to start normal consistency regularization
+normal_start_iter: 7000
+
+# Enable distortion loss (experimental)
+dist_loss: false
+# Weight for distortion loss
+dist_lambda: 0.01
+# Iteration to start distortion regularization
+dist_start_iter: 3000
+
+# Model for splatting
+model_type: 2dgs
+
+# Dump information to tensorboard every this steps
+tb_every: 100
+# Save training images to tensorboard
+tb_save_image: false
+
+# gaussian parameter's learning rates
+position_lr_init: 0.0016
+position_lr_final: 0.0000016
+position_lr_delay_mult: 0.01
+position_lr_max_steps: 30000
+feature_lr: 0.0025
+opacity_lr: 0.05
+scaling_lr: 0.001
+rotation_lr: 0.001
