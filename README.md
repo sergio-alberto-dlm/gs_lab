@@ -1,94 +1,130 @@
-# 🚧 🚧 🚧 
+# 🎉 Gaussian Splatting Lab: 3D Foundation Model + gsplat
 
-# Gaussian Splatting Lab: 3D Foundation Model + gsplat
+Welcome to the **Gaussian Splatting Lab**! 🚀 This repository provides an academic playground to experiment with Gaussian Splatting for photorealistic 3D scene reconstruction. We're constantly improving—feel free to spot issues or contribute! 💡
 
-The following repository arises as an academic tool to play and experiment with gaussian splatting. The project is still under construction, please do not hesitate to inform any mistakes and contributions are welcome. 
+---
 
-This project is mainly build on top of the recent 3D Foundation Model VGGT and gsplat which is a specialized framework to train gaussian splatting scenes. First with VGGT we estimate an initial dense point cloud which serves as input to the training pipeline of gaussian splatting. You just need a set of images of the same scene and by following the instructions below you will obtain a photorealistic 3D model, GPU hardware is required! Currently within this repo you are able to:
+## 🌟 Features
 
-1. Estimate a dense point cloud. 
-2. Train a 2D gaussian splatting scene. 
-3. Web-based viewer. 
-4. Render a video to visualize results.
-5. Perform appearence evaluations.
+- 🗺 **Dense Point Cloud Estimation** via the VGGT 3D Foundation Model
+- 🎨 **2D Gaussian Splatting** training with **gsplat**
+- 🌐 **Web-based Viewer** for real-time visualization
+- 🎥 **Video Rendering** of your scene’s trajectory
+- 📊 **Appearance Evaluations** to assess photorealism
 
-We higly motivates you to check the base_config.py file to modify any hyperparameter of the training pipeline 
+> 🔍 **Tip:** Tweak any hyperparameter by inspecting `base_config.py`.
 
-### installation 
+---
 
-First of all clone this repo along with the submodules (VGGT)
+## 📥 Installation
 
-```bash 
-git clone <repo-url>
-cd <your-main-repo-folder>
-git submodule update --init --recursive
-````
+1. **Clone with Submodules** (VGGT):
+   ```bash
+   git clone <repo-url>
+   cd gs_lab 
+   git submodule update --init --recursive
+   ```
 
-Then install the requirements. We use pytorch with cuda version 11.7
+2. **Install Requirements** (Python + CUDA 11.7):
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```bash 
-pip install -r requirements.txt 
+
+---
+
+## 🎬 Demo
+
+#### Watch our quick demo on YouTube:
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/n_6iYyrO3x8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
+---
+
+## 🔨 Usage
+
+### 1. Keyframe Selection (Optional)
+If you have **>200 images**, select a subset to avoid OOM errors:
+```bash
+python keyframe_selection \
+  --input_folder path/to/images \
+  --num_keyframes 150 \
+  --output_folder path/to/keyframes
 ```
 
-### demo 
-<video controls width="640">
-  <source src="assets/traj_29999.mp4" type="video/mp4">
-  <!-- fallback link if video tag isn’t supported: -->
-  <p>Your browser doesn’t support HTML5 video. 
-     <a href="assets/traj_29999.mp4">Download the video instead.</a>
-  </p>
-</video>
-
-### dense point cloud estimation 
-
-If the number of images is greater than 200 we highly recommend to first select some keyframes less than this number, because you might get out of memory for VGGT inference. Run:
-
-```bash 
-python keyframe_selection --input_folder input_folder/path --num_keyframes 150 --output_folder output_folder/path
+**Folder structure** after this step:
+```
+data/
+└── dataset/
+    └── scene/
+        └── images/
 ```
 
-The output folder path should have the following structure 
+---
 
-```bash 
-data
-    |_ dataset
-    |   |_ scene
-    |   |   |_ images
+### 2. Dense Point Cloud Estimation
+
+1. **Download VGGT checkpoint** from [Hugging Face](https://huggingface.co/facebook/VGGT-1B/blob/main/model.pt).
+2. **Run inference**:
+   ```bash
+   python pc_inference \
+     --model_path path/to/model.pt \
+     --img_base_path data/dataset/scene \
+     --init_conf_threshold 0.5 \
+     --vis_point_cloud \
+     --downsample_factor 2 \
+     --save_depths
+   ```
+3. **Assets generated**:
+   ```
+   data/
+   └── dataset/
+       └── scene/
+           ├── images/
+           ├── depths/      # Dense depth maps
+           └── sparse/0/    # COLMAP-like outputs
+   ```
+
+> ⚙️ The `--vis_point_cloud` flag launches a **Viser** web viewer.
+
+---
+
+### 3. Gaussian Splatting Training
+
+Train your scene with **gsplat**:
+```bash
+python trainer_2dgs.py \
+  --data_dir data/dataset/scene \
+  --result_dir results/dataset/scene
 ```
 
-To run VGGT first download the checkppoint [here](https://huggingface.co/facebook/VGGT-1B/blob/main/model.pt). Now we can estimate a dense point cloud with. Run:
+---
 
-```bash 
-python pc_inference --model_path --img_base_path data/dataset/scene --init_conf_threshold --vis_point_cloud --downsample_factor --save_depths
-``` 
+### 4. Visualization & Rendering
 
-The command --vis_point_cloud will lunch a web-based viewer with viser. Now you should have the following data structure
+- **Interactive Viewer**:
+  ```bash
+  python gaussian_splatting/simple_viewer.py \
+    --ckpt results/dataset/scene/checkpoint.pth
+  ```
 
-```bash 
-data
-    |_ dataset
-    |   |_ scene
-    |   |   |_ images
-    |   |   |_ depths
-    |   |   |_ sparse/0
-```
+- **Render a Trajectory Video**:
+  ```bash
+  python render_trajectory.py \
+    --ckpt results/dataset/scene/checkpoint.pth \
+    --out_video results/dataset/scene/demo.mp4
+  ```
 
-Within depths youo can find the depth map associated to the images and in sparse/0 you can find the colmap-like data 
+---
 
-### gsplat training 
+## 🤝 Contributing
 
-Finally you can lunch a gaussian splatting training with gsplat. Run:
+- 🐛 **Report issues** or suggest features on GitHub.
+- 📥 **Submit pull requests**—we welcome all improvements!
 
-```bash 
-python trainer_2dgs.py --data_dir data/dataset/scene --result_dir results/dataset/scene 
-``` 
+---
 
-### visualizatin 
+## 🙏 Acknowledgments
 
-To visualise your scene run: 
-
-```bash 
-python gaussian_splatting/simple_viewer.py --ckpt /path/to/checkpoint 
-```
-
-The path to the checkpoint should be at: 
+We gratefully acknowledge [gsplat by Nerfstudio](https://github.com/nerfstudio-project/gsplat) and [VGGT by Facebook Research](https://github.com/facebookresearch/vggt) for their fantastic frameworks that power this project.
