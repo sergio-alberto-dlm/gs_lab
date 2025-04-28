@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, glob 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "submodules", "vggt")))
 
 import argparse
@@ -12,29 +12,35 @@ from submodules.vggt.vggt.utils.load_fn import load_and_preprocess_images
 from submodules.vggt.vggt.utils.pose_enc import pose_encoding_to_extri_intri
 from submodules.vggt.vggt.utils.geometry import unproject_depth_map_to_point_map, closed_form_inverse_se3
 from utils.geometry_utils import viz_point_cloud, save_colmap_cameras, save_colmap_images, downsample_pcd, storePly
+from utils.general_utils import save_depth_maps
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 def get_args_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_path", type=str, default="submodules/vggt/checkpoints/model.pt", help="Path to model weights")
+    parser.add_argument("--model_path", type=str, default="/home/sergio/checkpoints/vggt/model.pt", help="Path to model weights")
     parser.add_argument("--img_base_path", type=str, required=True, help="Base path to images")
     parser.add_argument("--use_point_map", action="store_true", help="Flag to use point map otherwise recover the point cloud from depth maps")
     parser.add_argument("--init_conf_threshold", type=int, default=50, help="Confidence threshold for cleaning point cloud")
     parser.add_argument("--vis_point_cloud", action="store_true", help="Flag to visualize point cloud")
-    parser.add_argument("--downsample_factor", type=int, default=5, help="Random downsample factor to the point cloud")
+    parser.add_argument("--downsample_factor", type=float, default=4, help="Random downsample factor to the point cloud")
+    parser.add_argument("--save_depths", action="store_true", default=True, help="Flag to save depth maps into colmap dir")
     return parser
 
 def load_images(path_images:str):
     """load images from a directory"""
     images_names = sorted(os.listdir(path_images))
     images_paths = [os.path.join(path_images, name) for name in images_names]
+
+    print("num images: ", len(images_paths))
     # retrieve the original image size 
     image = Image.open(images_paths[0])
     width, height = image.size
+
     # preproceess images 
     images = load_and_preprocess_images(images_paths).to(DEVICE)
-    return images, (width, height) 
+
+    return images, (width, height), images_names 
 
 def load_model(model_path:str):
     """load the pre-trained model""" 
@@ -122,11 +128,13 @@ def main():
 
     # directories 
     img_folder_path = os.path.join(args.img_base_path, "images")
+    depth_folder_path = os.path.join(args.img_base_path, "depths")
     output_colmap_path = os.path.join(args.img_base_path, "sparse/0")
     os.makedirs(output_colmap_path, exist_ok=True)
+    os.makedirs(depth_folder_path, exist_ok=True)
 
     # model inference 
-    images, ori_size = load_images(path_images=img_folder_path)
+    images, ori_size, images_names = load_images(path_images=img_folder_path)
     model = load_model(model_path=args.model_path)
     predictions = pc_inference(
         model=model, images=images, use_point_map=args.use_point_map, init_conf_threshold=args.init_conf_threshold
@@ -143,12 +151,15 @@ def main():
 
     # save colmap outputs
     save_colmap_cameras(ori_size, intrinsics, os.path.join(output_colmap_path, 'cameras.txt'))
-    save_colmap_images(extrinsics, os.path.join(output_colmap_path, 'images.txt'), sorted(os.listdir(img_folder_path)))
+    save_colmap_images(extrinsics, os.path.join(output_colmap_path, 'images.txt'), sorted(images_names))
 
     # save final point cloud
     filtered_points, filtered_colors = downsample_pcd(points=points, colors=colors, downsample_factor=args.downsample_factor)
     print("number of points: ", filtered_points.shape[0])
     storePly(os.path.join(output_colmap_path, "points3D.ply"), filtered_points, filtered_colors)
+
+    # save depth maps 
+    if args.save_depths: save_depth_maps(depth_maps=predictions["depth_maps"], output_folder=depth_folder_path, images_names=images_names)
 
     print("Geometry estimation completed.")
 
