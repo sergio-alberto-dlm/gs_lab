@@ -4,6 +4,14 @@ Welcome to the **Gaussian Splatting Lab**! 🚀 This repository provides an acad
 
 ---
 
+## Blog
+
+I have written an entry blog on Medium where I fully explained all the details behind Gaussian Splatting and its 2D variant. Click in the following link if you want to deep dive into the maths. 
+
+[![Read on Medium](https://img.shields.io/badge/Medium-Blog-black?logo=medium&style=for-the-badge)](https://medium.com/@sergio.deleon_41219/2d-gaussian-splatting-from-pixels-to-geometry-part-1-b08763fbfefe)
+
+---
+
 ## 🌟 Features
 
 - 🗺 **Dense Point Cloud Estimation** via the VGGT 3D Foundation Model
@@ -37,8 +45,7 @@ Welcome to the **Gaussian Splatting Lab**! 🚀 This repository provides an acad
 
 #### Watch our quick demo on YouTube:
 
-<iframe width="640" height="360" src="https://www.youtube.com/embed/n_6iYyrO3x8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
+[![Watch the video](https://img.youtube.com/vi/I3qUrxQWr-8/0.jpg)](https://www.youtube.com/watch?v=I3qUrxQWr-8)
 
 ---
 

@@ -1,3 +1,9 @@
 [submodule "submodules/vggt"]
 	path = submodules/vggt
 	url = git@github.com:facebookresearch/vggt.git
+[submodule "submodules/dsine"]
+	path = submodules/dsine
+	url = git@github.com:baegwangbin/DSINE.git
+[submodule "submodules/fit3d"]
+	path = submodules/fit3d
+	url = git@github.com:ywyue/FiT3D.git
